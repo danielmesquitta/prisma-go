@@ -1,9 +1,8 @@
 -- CreateTable
-CREATE TABLE "Post" (
+CREATE TABLE "posts" (
     "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
     "published" BOOLEAN NOT NULL DEFAULT true,
-    "authorId" INTEGER NOT NULL,
 
-    CONSTRAINT "Post_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "posts_pkey" PRIMARY KEY ("id")
 );
