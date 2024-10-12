@@ -20,31 +20,41 @@ func (q *Queries) CreateUser(ctx context.Context, name string) error {
 }
 
 const deleteUser = `-- name: DeleteUser :exec
-DELETE FROM users
+UPDATE users
+SET deleted_at = NOW()
 WHERE id = $1
+  AND deleted_at IS NULL
 `
 
-func (q *Queries) DeleteUser(ctx context.Context, id int32) error {
+func (q *Queries) DeleteUser(ctx context.Context, id string) error {
 	_, err := q.db.ExecContext(ctx, deleteUser, id)
 	return err
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, name
+SELECT id, name, created_at, updated_at, deleted_at
 FROM users
 WHERE id = $1
+  AND deleted_at IS NULL
 `
 
-func (q *Queries) GetUser(ctx context.Context, id int32) (User, error) {
+func (q *Queries) GetUser(ctx context.Context, id string) (User, error) {
 	row := q.db.QueryRowContext(ctx, getUser, id)
 	var i User
-	err := row.Scan(&i.ID, &i.Name)
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
 	return i, err
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, name
+SELECT id, name, created_at, updated_at, deleted_at
 FROM users
+WHERE deleted_at IS NULL
 `
 
 func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
@@ -56,7 +66,13 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 	var items []User
 	for rows.Next() {
 		var i User
-		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -74,10 +90,11 @@ const updateUser = `-- name: UpdateUser :exec
 UPDATE users
 SET name = $2
 WHERE id = $1
+  AND deleted_at IS NULL
 `
 
 type UpdateUserParams struct {
-	ID   int32
+	ID   string
 	Name string
 }
 

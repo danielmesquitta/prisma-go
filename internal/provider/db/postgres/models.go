@@ -4,14 +4,25 @@
 
 package postgres
 
+import (
+	"database/sql"
+	"time"
+)
+
 type Post struct {
-	ID        int32
+	ID        string
 	Title     string
 	Published bool
-	AuthorId  int32
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt sql.NullTime
+	AuthorID  string
 }
 
 type User struct {
-	ID   int32
-	Name string
+	ID        string
+	Name      string
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt sql.NullTime
 }
